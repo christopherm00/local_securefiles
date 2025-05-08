@@ -22,7 +22,8 @@ install into the local directory of the moodle root:
 You will need to set the location of where your files are  in the frontend of Moodle
 ## ModRewrite Rule to add to virtual 
 Apache Server/Virtual Host Configuration: 
-This is generally the best place for these rules. 
+This is generally the best place for these rules.
+The target of your RewriteRule should be the path to serve.php relative to your DocumentRoot.
 You'll need to restart or reload Apache after making changes.
 
 

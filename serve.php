@@ -42,6 +42,8 @@ $real_file_path = realpath($full_file_path);
 
 if ($real_base_path === false) {
     error_log('Moodle local_securefiles: Configured base_path "' . $base_media_path . '" (resolved to: ' . $real_base_path . ') is invalid or not accessible.');
+    echo 'Moodle local_securefiles: Configured base_path "' . $base_media_path . '" (resolved to: ' . $real_base_path . ') is invalid or not accessible.';
+
     throw new moodle_exception('config_error_basepath', 'local_securefiles');
 }
 

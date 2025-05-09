@@ -21,7 +21,7 @@ $base_media_path_config = get_config('local_securefiles', 'base_path');
 
 if (empty($base_media_path_config)) {
     error_log('Moodle local_securefiles: base_path setting is not configured.');
-    print_error('config_error_basepath', 'local_securefiles');
+    throw new moodle_exception('config_error_basepath', 'local_securefiles');
 }
 
 $base_media_path = rtrim($base_media_path_config, '/\\') . DIRECTORY_SEPARATOR;
@@ -32,7 +32,7 @@ $relative_file_path = required_param('file', PARAM_PATH);
 
 // --- Security Checks ---
 if (strpos($relative_file_path, '..') !== false) {
-    print_error('invalidpath', 'local_securefiles');
+    throw new moodle_exception('invalidpath', 'local_securefiles');
 }
 
 $full_file_path = $base_media_path . $relative_file_path;
@@ -42,17 +42,17 @@ $real_file_path = realpath($full_file_path);
 
 if ($real_base_path === false) {
     error_log('Moodle local_securefiles: Configured base_path "' . $base_media_path . '" (resolved to: ' . $real_base_path . ') is invalid or not accessible.');
-    print_error('config_error_basepath', 'local_securefiles');
+    throw new moodle_exception('config_error_basepath', 'local_securefiles');
 }
 
 if ($real_file_path === false || strpos($real_file_path, $real_base_path) !== 0) {
     error_log('Moodle local_securefiles: File access denied or not found. Requested: "'.$full_file_path.'", Resolved: "'.$real_file_path.'", Base: "'.$real_base_path.'"');
-    print_error('filenotfound', 'local_securefiles');
+    throw new moodle_exception('filenotfound', 'local_securefiles');
 }
 
 if (!is_file($real_file_path) || !is_readable($real_file_path)) {
     error_log('Moodle local_securefiles: File not readable or is a directory. Path: "'.$real_file_path.'"');
-    print_error('filenotfound', 'local_securefiles');
+    throw new moodle_exception('filenotfound', 'local_securefiles');
 }
 
 // --- Serve the File ---

@@ -19,11 +19,16 @@
 $debugSecureFiles = true;
 // --- END DEBUG FLAG ---
 
+// Test basic error logging - This should appear in your PHP/web server error log if error_log is working.
+if ($debugSecureFiles) {
+    error_log("SecureFiles Debug: TOP OF SCRIPT serve.php REACHED. Timestamp: " . time());
+}
+
 // Bootstrap Moodle.
 require(__DIR__ . '/../../config.php');
 
 if ($debugSecureFiles) {
-    error_log("SecureFiles Debug: Script execution started for request: " . (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'N/A'));
+    error_log("SecureFiles Debug: Moodle config.php loaded. Script execution started for request: " . (isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : 'N/A'));
 }
 
 // Get the configured base path for media files from plugin settings.
@@ -50,7 +55,7 @@ if ($debugSecureFiles) {
 // --- SCORM Path Detection ---
 $isScormPath = (stripos($relative_file_path, 'SCORM') !== false);
 if ($debugSecureFiles && $isScormPath) {
-    error_log("SecureFiles Debug: Path identified as SCORM-related.");
+    error_log("SecureFiles Debug: Path identified as SCORM-related based on 'SCORM' string in path.");
 }
 
 
@@ -75,24 +80,24 @@ $real_base_path = realpath($base_media_path);
 $real_file_path = realpath($full_file_path);
 
 if ($debugSecureFiles) {
-    error_log("SecureFiles Debug: real_base_path: '{$real_base_path}', real_file_path: '{$real_file_path}'");
+    error_log("SecureFiles Debug: real_base_path: '" . ($real_base_path ? $real_base_path : 'false (realpath failed)') . "', real_file_path: '" . ($real_file_path ? $real_file_path : 'false (realpath failed)') . "'");
 }
 
 // Check if the base path itself is valid.
 if ($real_base_path === false) {
-    error_log('Moodle local_securefiles: CRITICAL - Configured base_path "' . $base_media_path . '" is invalid or not accessible by the web server.');
+    error_log('Moodle local_securefiles: CRITICAL - Configured base_path "' . $base_media_path . '" (realpath failed) is invalid or not accessible by the web server.');
     print_error('config_error_basepath', 'local_securefiles');
 }
 
 // Check if the resolved file path is valid and starts with the resolved base path.
 if ($real_file_path === false || strpos($real_file_path, $real_base_path) !== 0) {
-    error_log("Moodle local_securefiles: WARNING - File access denied or not found. Requested: '{$full_file_path}', Resolved: '{$real_file_path}', Base: '{$real_base_path}'");
+    error_log("Moodle local_securefiles: WARNING - File access denied or not found. Requested: '{$full_file_path}', Resolved real_file_path: '" . ($real_file_path ? $real_file_path : 'false (realpath failed)') . "', Resolved real_base_path: '{$real_base_path}'");
     print_error('filenotfound', 'local_securefiles');
 }
 
 // 4. Check if the path points to a file (not a directory) and is readable.
 if (!is_file($real_file_path) || !is_readable($real_file_path)) {
-    error_log("Moodle local_securefiles: WARNING - File not readable or is a directory. Path: '{$real_file_path}'");
+    error_log("Moodle local_securefiles: WARNING - File not readable or is a directory. Path: '{$real_file_path}'. is_file: " . (is_file($real_file_path) ? 'true' : 'false') . ", is_readable: " . (is_readable($real_file_path) ? 'true' : 'false'));
     print_error('filenotfound', 'local_securefiles');
 }
 
@@ -104,7 +109,7 @@ $filename = basename($real_file_path);
 // Determine the file extension.
 $extension = strtolower(pathinfo($real_file_path, PATHINFO_EXTENSION));
 if ($debugSecureFiles) {
-    error_log("SecureFiles Debug: Determined extension: '{$extension}' for file: '{$filename}'");
+    error_log("SecureFiles Debug: Determined extension: '{$extension}' for file: '{$filename}' (real_file_path: '{$real_file_path}')");
 }
 
 // Determine the MIME type of the file.
@@ -123,7 +128,7 @@ switch ($extension) {
     case 'js':
         $mimetype = 'application/javascript'; // Official & most robust for JS
         if ($debugSecureFiles) {
-            error_log("SecureFiles Debug: Matched extension 'js', setting MIME type to 'application/javascript'");
+            error_log("SecureFiles Debug: Matched extension 'js', explicitly setting MIME type to 'application/javascript' for '{$filename}'");
         }
         break;
     case 'json':
@@ -260,7 +265,12 @@ while (ob_get_level() > 0) {
 }
 
 // Set HTTP headers for the file download/display.
-header('Content-Type: ' . $mimetype);
+$contentTypeHeader = 'Content-Type: ' . $mimetype;
+header($contentTypeHeader);
+if ($debugSecureFiles) {
+    error_log("SecureFiles Debug: Sending header: '{$contentTypeHeader}'");
+}
+
 header('Content-Length: ' . filesize($real_file_path));
 
 $disposition = 'inline';
@@ -275,7 +285,7 @@ header('Cache-Control: private, must-revalidate');
 header('Pragma: public');
 
 if ($debugSecureFiles) {
-    error_log("SecureFiles Debug: Headers sent. Attempting to readfile: '{$real_file_path}'");
+    error_log("SecureFiles Debug: All headers sent. Attempting to readfile: '{$real_file_path}'");
 }
 
 if (!readfile($real_file_path)) {

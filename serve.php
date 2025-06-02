@@ -12,6 +12,7 @@
  * @copyright 2025 Christopher Murad - Moodle Contractor
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 // Bootstrap Moodle.
 require(__DIR__ . '/../../config.php');
 
@@ -59,13 +60,13 @@ if ($real_base_path === false) {
 
 // Check if the resolved file path is valid and starts with the resolved base path.
 if ($real_file_path === false || strpos($real_file_path, $real_base_path) !== 0) {
-    error_log('Moodle local_securefiles: File access denied or not found. Requested: "' . $full_file_path . '", Resolved: "' . $real_file_path . '", Base: "' . $real_base_path . '"');
+    error_log('Moodle local_securefiles: File access denied or not found. Requested: "'.$full_file_path.'", Resolved: "'.$real_file_path.'", Base: "'.$real_base_path.'"');
     print_error('filenotfound', 'local_securefiles');
 }
 
 // 4. Check if the path points to a file (not a directory) and is readable.
 if (!is_file($real_file_path) || !is_readable($real_file_path)) {
-    error_log('Moodle local_securefiles: File not readable or is a directory. Path: "' . $real_file_path . '"');
+    error_log('Moodle local_securefiles: File not readable or is a directory. Path: "'.$real_file_path.'"');
     print_error('filenotfound', 'local_securefiles');
 }
 
@@ -83,117 +84,49 @@ $mimetype = null;
 // Prioritize known extensions, especially for web/SCORM content.
 switch ($extension) {
     // Web Content (Critical for SCORM & general web use)
-    case 'html':
-    case 'htm':
-        $mimetype = 'text/html';
-        break;
-    case 'css':
-        $mimetype = 'text/css';
-        break;
-    case 'js':
-        $mimetype = 'application/javascript';
-        break; // Official & most robust for JS
-    case 'json':
-        $mimetype = 'application/json';
-        break;
-    case 'xml':
-        $mimetype = 'application/xml';
-        break; // text/xml is also common, but application/xml is often preferred
+    case 'html': case 'htm': $mimetype = 'text/html'; break;
+    case 'css': $mimetype = 'text/css'; break;
+    case 'js': $mimetype = 'application/javascript'; break; // Official & most robust for JS
+    case 'json': $mimetype = 'application/json'; break;
+    case 'xml': $mimetype = 'application/xml'; break; // text/xml is also common, but application/xml is often preferred
 
     // Images
-    case 'jpg':
-    case 'jpeg':
-        $mimetype = 'image/jpeg';
-        break;
-    case 'png':
-        $mimetype = 'image/png';
-        break;
-    case 'gif':
-        $mimetype = 'image/gif';
-        break;
-    case 'svg':
-        $mimetype = 'image/svg+xml';
-        break;
-    case 'ico':
-        $mimetype = 'image/vnd.microsoft.icon';
-        break;
+    case 'jpg': case 'jpeg': $mimetype = 'image/jpeg'; break;
+    case 'png': $mimetype = 'image/png'; break;
+    case 'gif': $mimetype = 'image/gif'; break;
+    case 'svg': $mimetype = 'image/svg+xml'; break;
+    case 'ico': $mimetype = 'image/vnd.microsoft.icon'; break;
 
     // Audio/Video (Common in SCORM)
-    case 'mp3':
-        $mimetype = 'audio/mpeg';
-        break;
-    case 'mp4':
-        $mimetype = 'video/mp4';
-        break;
-    case 'webm':
-        $mimetype = 'video/webm';
-        break;
-    case 'ogg':
-        $mimetype = 'application/ogg';
-        break;
-    case 'ogv':
-        $mimetype = 'video/ogg';
-        break;
-    case 'oga':
-        $mimetype = 'audio/ogg';
-        break;
-    case 'wav':
-        $mimetype = 'audio/wav';
-        break;
-    case 'flv':
-        $mimetype = 'video/x-flv';
-        break;
-    case 'swf':
-        $mimetype = 'application/x-shockwave-flash';
-        break;
+    case 'mp3': $mimetype = 'audio/mpeg'; break;
+    case 'mp4': $mimetype = 'video/mp4'; break;
+    case 'webm': $mimetype = 'video/webm'; break;
+    case 'ogg': $mimetype = 'application/ogg'; break;
+    case 'ogv': $mimetype = 'video/ogg'; break;
+    case 'oga': $mimetype = 'audio/ogg'; break;
+    case 'wav': $mimetype = 'audio/wav'; break;
+    case 'flv': $mimetype = 'video/x-flv'; break;
+    case 'swf': $mimetype = 'application/x-shockwave-flash'; break;
 
     // Fonts
-    case 'woff':
-        $mimetype = 'font/woff';
-        break;
-    case 'woff2':
-        $mimetype = 'font/woff2';
-        break;
-    case 'ttf':
-        $mimetype = 'font/ttf';
-        break;
-    case 'otf':
-        $mimetype = 'font/otf';
-        break;
-    case 'eot':
-        $mimetype = 'application/vnd.ms-fontobject';
-        break;
+    case 'woff': $mimetype = 'font/woff'; break;
+    case 'woff2': $mimetype = 'font/woff2'; break;
+    case 'ttf': $mimetype = 'font/ttf'; break;
+    case 'otf': $mimetype = 'font/otf'; break;
+    case 'eot': $mimetype = 'application/vnd.ms-fontobject'; break;
 
     // Documents
-    case 'pdf':
-        $mimetype = 'application/pdf';
-        break;
-    case 'txt':
-        $mimetype = 'text/plain';
-        break;
-    case 'doc':
-        $mimetype = 'application/msword';
-        break;
-    case 'docx':
-        $mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        break;
-    case 'xls':
-        $mimetype = 'application/vnd.ms-excel';
-        break;
-    case 'xlsx':
-        $mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        break;
-    case 'ppt':
-        $mimetype = 'application/vnd.ms-powerpoint';
-        break;
-    case 'pptx':
-        $mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-        break;
+    case 'pdf': $mimetype = 'application/pdf'; break;
+    case 'txt': $mimetype = 'text/plain'; break;
+    case 'doc': $mimetype = 'application/msword'; break;
+    case 'docx': $mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'; break;
+    case 'xls': $mimetype = 'application/vnd.ms-excel'; break;
+    case 'xlsx': $mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; break;
+    case 'ppt': $mimetype = 'application/vnd.ms-powerpoint'; break;
+    case 'pptx': $mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'; break;
 
     // Archives
-    case 'zip':
-        $mimetype = 'application/zip';
-        break;
+    case 'zip': $mimetype = 'application/zip'; break;
 
     default:
         if ($isScormPath) {
@@ -252,7 +185,7 @@ header('Pragma: public'); // HTTP 1.0 compatibility for Cache-Control.
 
 // Output the file contents.
 if (!readfile($real_file_path)) {
-    error_log('Moodle local_securefiles: readfile() failed for path: "' . $real_file_path . '"');
+    error_log('Moodle local_securefiles: readfile() failed for path: "'.$real_file_path.'"');
 }
 
 exit;
